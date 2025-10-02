@@ -26,7 +26,7 @@ UID=$(id -u) GID=$(id -g) APP_ENV=development docker compose up --build --detach
 - `APP_ENV` determines whether dependencies are installed with or without development packages.
 
 By default, the application will be available at:
-👉 [http://localhost:8080](http://localhost:8080)
+👉 [http://localhost:8080/pets](http://localhost:8080/pets)
 
 ---
 
