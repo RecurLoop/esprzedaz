@@ -4,9 +4,6 @@ FROM php:8.4-fpm
 ARG UID=
 ARG GID=
 
-ARG APP_ENV=development
-ENV APP_ENV=${APP_ENV}
-
 # System dependencies
 RUN apt-get update && \
     apt-get install -y git unzip curl libpq-dev libpng-dev libzip-dev libonig-dev zip && \
@@ -25,18 +22,23 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www
 
-# Copy project files
-COPY . .
+# Copy entrypoint script
+COPY ./docker/php/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# Install dependencies only if vendor does not exist
-RUN if [ ! -d "vendor" ]; then \
-      [ "$APP_ENV" = "production" ] \
-        && composer install --no-dev --optimize-autoloader \
-        || composer install --optimize-autoloader; \
-    fi
+# Set application environment
+ARG APP_ENV=development
+ENV APP_ENV=${APP_ENV}
+
+# Fix permissions
+RUN chown www-data:www-data /var/www
+
+# Copy project files
+COPY --chown=www-data:www-data . .
 
 # Expose PHP-FPM port
 EXPOSE 9000
 
 # Default command
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["php-fpm"]
